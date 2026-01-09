@@ -9,7 +9,7 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
 
-    product = relationship("Product", back_populates="categories")
+    products = relationship("Product", back_populates="category")
 
 class Product(Base):
     __tablename__ = "products"
@@ -22,7 +22,7 @@ class Product(Base):
     brand = Column(String(120), nullable=False)
 
 
-    categories = relationship("Category", back_populates="products")
+    category = relationship("Category", back_populates="products")
     sales = relationship("Sale", back_populates="products")
 
 

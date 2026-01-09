@@ -1,0 +1,12 @@
+services:
+  backend:
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    volumes: []
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8080:80"
+    volumes: []

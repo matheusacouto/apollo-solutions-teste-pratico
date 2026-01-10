@@ -3,7 +3,7 @@ import io
 
 from sqlalchemy.exc import IntegrityError
 
-from models import Product
+from models import Product, Sale
 
 
 def list_products(db):
@@ -43,6 +43,7 @@ def delete_product(db, product_id):
     if not product:
         return None
 
+    db.query(Sale).filter(Sale.product_id == product_id).delete()
     db.delete(product)
     db.commit()
     return product

@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import Integer, func
 from sqlalchemy.exc import IntegrityError
 
-from models import MonthlySales, Sale
+from models import MonthlySales, Product, Sale
 
 
 def sales_summary(db, year=None):
@@ -84,9 +84,8 @@ def import_sales_from_csv(db, file_contents: bytes):
         if has_header
         else csv.reader(raw_lines)
     )
-    created = 0
-    skipped = 0
     errors = []
+    sales = []
 
     for index, row in enumerate(reader, start=1):
         try:
@@ -105,7 +104,6 @@ def import_sales_from_csv(db, file_contents: bytes):
                 total_price_raw = float(row[3] or 0)
                 date_raw = (row[4] or "").strip()
             if not (product_id and quantity and date_raw):
-                skipped += 1
                 errors.append({"row": index, "error": "Campos obrigatorios ausentes"})
                 continue
 
@@ -113,27 +111,55 @@ def import_sales_from_csv(db, file_contents: bytes):
             month = date.month
             total_price_cents = int(round(total_price_raw * 100))
 
-            sale = Sale(
-                product_id=product_id,
-                month=month,
-                quantity=quantity,
-                total_price=total_price_cents,
-                date=date,
+            sales.append(
+                Sale(
+                    product_id=product_id,
+                    month=month,
+                    quantity=quantity,
+                    total_price=total_price_cents,
+                    date=date,
+                )
             )
-            db.add(sale)
-            db.commit()
-            db.refresh(sale)
-            created += 1
         except (ValueError, TypeError) as exc:
-            db.rollback()
-            skipped += 1
             errors.append({"row": index, "error": f"Dados invalidos: {exc}"})
-        except IntegrityError as exc:
-            db.rollback()
-            skipped += 1
-            errors.append({"row": index, "error": f"Duplicado ou violacao: {exc.orig}"})
 
-    return {"created": created, "skipped": skipped, "errors": errors}
+    if errors:
+        return {"created": 0, "skipped": 0, "errors": errors}
+
+    product_ids = {sale.product_id for sale in sales}
+    if product_ids:
+        existing_ids = {
+            row.id
+            for row in db.query(Product.id)
+            .filter(Product.id.in_(product_ids))
+            .all()
+        }
+        missing = sorted(product_ids - existing_ids)
+        if missing:
+            return {
+                "created": 0,
+                "skipped": 0,
+                "errors": [
+                    {
+                        "row": 0,
+                        "error": f"Produtos inexistentes: {', '.join(map(str, missing))}",
+                    }
+                ],
+            }
+
+    try:
+        db.add_all(sales)
+        db.commit()
+        created = len(sales)
+    except IntegrityError as exc:
+        db.rollback()
+        return {
+            "created": 0,
+            "skipped": 0,
+            "errors": [{"row": 0, "error": f"Duplicado ou violacao: {exc.orig}"}],
+        }
+
+    return {"created": created, "skipped": 0, "errors": []}
 
 
 def sales_years(db):

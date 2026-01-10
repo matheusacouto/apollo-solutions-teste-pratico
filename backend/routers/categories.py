@@ -34,4 +34,6 @@ async def upload_categories_csv(
 ):
     contents = await file.read()
     result = import_categories_from_csv(db, contents)
+    if result["errors"]:
+        return ApiResponse(success=False, message="CSV invalido", data=result)
     return ApiResponse(success=True, message="Importacao concluida", data=result)

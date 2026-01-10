@@ -35,6 +35,8 @@ def get_sales_years(db: Session = Depends(get_db)):
 async def upload_sales_csv(file: UploadFile = File(...), db: Session = Depends(get_db)):
     contents = await file.read()
     result = import_sales_from_csv(db, contents)
+    if result["errors"]:
+        return ApiResponse(success=False, message="CSV invalido", data=result)
     return ApiResponse(success=True, message="Importacao concluida", data=result)
 
 

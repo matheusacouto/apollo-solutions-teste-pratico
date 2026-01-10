@@ -40,17 +40,34 @@ def edit_category(db, category_id, data):
 def import_categories_from_csv(db, file_contents: bytes):
     decoded = file_contents.decode("utf-8")
     reader = csv.DictReader(io.StringIO(decoded))
-    created = 0
-    skipped = 0
+    fieldnames = [name.strip() for name in (reader.fieldnames or [])]
+    allowed_fields = {"id", "name"}
+    if not fieldnames or "name" not in fieldnames or any(
+        field not in allowed_fields for field in fieldnames
+    ):
+        return {
+            "created": 0,
+            "skipped": 0,
+            "errors": [
+                {"row": 0, "error": "CSV invalido: colunas esperadas id,name"}
+            ],
+        }
     errors = []
+    names_seen = set()
+    categories = []
 
     for index, row in enumerate(reader, start=1):
         try:
             name = (row.get("name") or "").strip()
             if not name:
-                skipped += 1
                 errors.append({"row": index, "error": "Nome vazio"})
                 continue
+
+            name_key = name.lower()
+            if name_key in names_seen:
+                errors.append({"row": index, "error": "Nome duplicado no CSV"})
+                continue
+            names_seen.add(name_key)
 
             exists = (
                 db.query(Category)
@@ -58,22 +75,26 @@ def import_categories_from_csv(db, file_contents: bytes):
                 .first()
             )
             if exists:
-                skipped += 1
                 errors.append({"row": index, "error": "Categoria duplicada"})
                 continue
 
-            category = Category(name=name)
-            db.add(category)
-            db.commit()
-            db.refresh(category)
-            created += 1
+            categories.append(Category(name=name))
         except (ValueError, TypeError) as exc:
-            db.rollback()
-            skipped += 1
             errors.append({"row": index, "error": f"Dados invalidos: {exc}"})
-        except IntegrityError as exc:
-            db.rollback()
-            skipped += 1
-            errors.append({"row": index, "error": f"Duplicado ou violacao: {exc.orig}"})
 
-    return {"created": created, "skipped": skipped, "errors": errors}
+    if errors:
+        return {"created": 0, "skipped": 0, "errors": errors}
+
+    try:
+        db.add_all(categories)
+        db.commit()
+        created = len(categories)
+    except IntegrityError as exc:
+        db.rollback()
+        return {
+            "created": 0,
+            "skipped": 0,
+            "errors": [{"row": 0, "error": f"Duplicado ou violacao: {exc.orig}"}],
+        }
+
+    return {"created": created, "skipped": 0, "errors": []}

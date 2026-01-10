@@ -51,9 +51,8 @@ def delete_product(db, product_id):
 def import_products_from_csv(db, file_contents: bytes):
     decoded = file_contents.decode("utf-8")
     reader = csv.DictReader(io.StringIO(decoded))
-    created = 0
-    skipped = 0
     errors = []
+    products = []
 
     for index, row in enumerate(reader, start=1):
         try:
@@ -64,28 +63,34 @@ def import_products_from_csv(db, file_contents: bytes):
             price = float(row.get("price") or 0)
 
             if not name or not description or not brand or not category_id:
-                skipped += 1
                 errors.append({"row": index, "error": "Campos obrigatorios ausentes"})
                 continue
 
-            product = Product(
-                name=name,
-                description=description,
-                category_id=category_id,
-                price=price,
-                brand=brand,
+            products.append(
+                Product(
+                    name=name,
+                    description=description,
+                    category_id=category_id,
+                    price=price,
+                    brand=brand,
+                )
             )
-            db.add(product)
-            db.commit()
-            db.refresh(product)
-            created += 1
         except (ValueError, TypeError) as exc:
-            db.rollback()
-            skipped += 1
             errors.append({"row": index, "error": f"Dados invalidos: {exc}"})
-        except IntegrityError as exc:
-            db.rollback()
-            skipped += 1
-            errors.append({"row": index, "error": f"Duplicado ou violacao: {exc.orig}"})
 
-    return {"created": created, "skipped": skipped, "errors": errors}
+    if errors:
+        return {"created": 0, "skipped": 0, "errors": errors}
+
+    try:
+        db.add_all(products)
+        db.commit()
+        created = len(products)
+    except IntegrityError as exc:
+        db.rollback()
+        return {
+            "created": 0,
+            "skipped": 0,
+            "errors": [{"row": 0, "error": f"Duplicado ou violacao: {exc.orig}"}],
+        }
+
+    return {"created": created, "skipped": 0, "errors": []}

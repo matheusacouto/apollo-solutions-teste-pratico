@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Generic, TypeVar, Optional
 
 T = TypeVar("T")
@@ -24,6 +24,16 @@ class ProductUpdate(BaseModel):
     price: float
     brand: str
 
+class ProductOut(BaseModel):
+    id: int
+    name: str
+    description: str
+    category_id: int
+    price: float | str
+    brand: str
+
+    model_config = ConfigDict(from_attributes=True)
+
 ## Categories
 
 class CategoryCreate(BaseModel):
@@ -31,3 +41,31 @@ class CategoryCreate(BaseModel):
 
 class CategoryUpdate(BaseModel):
     name: str
+
+class CategoryOut(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+## Sales
+
+class SalesSummaryItem(BaseModel):
+    month: int
+    quantity: int
+    total_price: float
+    profit_variation: float
+
+
+class MonthlySalesUpdate(BaseModel):
+    quantity: int
+    total_price: float
+
+
+class MonthlySalesOut(BaseModel):
+    year: int
+    month: int
+    quantity: int
+    total_price: float
+
+    model_config = ConfigDict(from_attributes=True)

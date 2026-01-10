@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -18,7 +18,7 @@ class Product(Base):
     description = Column(String(120), nullable=False)
     name = Column(String(100), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
-    price = Column(String(120), unique=True, nullable=False)
+    price = Column(String(120), nullable=False)
     brand = Column(String(120), nullable=False)
 
 
@@ -34,5 +34,17 @@ class Sale(Base):
     month = Column(Integer, nullable=False)
     quantity = Column(Integer, nullable=False)
     total_price = Column(Integer, nullable=False)
+    date = Column(Date, nullable=True)
 
     products = relationship("Product", back_populates="sales")
+
+
+class MonthlySales(Base):
+    __tablename__ = "monthly_sales"
+    __table_args__ = (UniqueConstraint("year", "month", name="uq_monthly_sales"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    year = Column(Integer, nullable=False)
+    month = Column(Integer, nullable=False)
+    quantity = Column(Integer, nullable=False)
+    total_price = Column(Integer, nullable=False)

@@ -1,6 +1,6 @@
 # Apollo Solutions - Teste Pratico
 
-Aplicacao fullstack com FastAPI no backend, React + Vite no frontend e Postgres como banco de dados. O projeto inclui endpoints para categorias e produtos, alem de arquivos CSV de apoio em `Docs/`.
+Aplicacao fullstack com FastAPI no backend, React + Vite no frontend e Postgres como banco de dados. O projeto inclui dashboard com charts de vendas, CRUD de produtos e categorias, upload/download de CSV e edicao mensal das vendas.
 
 ## Stack
 
@@ -8,6 +8,7 @@ Aplicacao fullstack com FastAPI no backend, React + Vite no frontend e Postgres 
 - Frontend: React + Vite
 - Banco: PostgreSQL 16
 - Orquestracao: Docker Compose
+- UI: Tailwind CSS + shadcn/ui
 
 ## Estrutura
 
@@ -46,12 +47,21 @@ Servicos:
 
 ## Endpoints principais
 
-- `GET /categories`
-- `POST /categories`
-- `PUT /categories/{category_id}`
-- `GET /products`
-- `POST /products`
-- `PUT /products/{product_id}`
+- `GET /categories` (lista categorias)
+- `POST /categories` (criar categoria)
+- `PUT /categories/{category_id}` (editar categoria)
+- `POST /categories/upload` (importar categorias via CSV)
+- `GET /products` (lista produtos)
+- `POST /products` (criar produto)
+- `PUT /products/{product_id}` (editar produto)
+- `DELETE /products/{product_id}` (remover produto)
+- `POST /products/upload` (importar produtos via CSV)
+- `GET /products/csv` (exportar produtos em CSV)
+- `GET /sales/summary?year=YYYY` (resumo mensal de vendas e variacao)
+- `GET /sales/years` (anos disponiveis)
+- `PUT /sales/override/{year}/{month}` (editar dados mensais)
+- `POST /sales/upload` (importar vendas via CSV)
+- `GET /sales/csv?year=YYYY` (exportar vendas em CSV)
 
 ## Rodar localmente (sem Docker)
 
@@ -75,9 +85,42 @@ npm install
 npm run dev
 ```
 
+Observacao: se precisar apontar para outro backend, defina `VITE_API_URL` no ambiente.
+
 ## Dados de apoio
 
 Os arquivos CSV do enunciado estao em `Docs/`:
 - `categories.csv`
 - `products.csv`
 - `sales.csv`
+
+## Funcionalidades
+
+- Dashboard com dois charts (quantidade vendida e variacao de faturamento).
+- Filtro de produtos por nome, categoria e ordem de preco.
+- Paginacao da lista de produtos.
+- Modal para cadastro/edicao de produtos e categorias.
+- Upload de CSV com validacao all-or-nothing.
+- Download de CSV de produtos e vendas.
+
+## Como testar
+
+### Fluxo rapido (Docker)
+
+```bash
+docker compose up --build
+```
+
+1. Acesse http://localhost:5173
+2. No painel, use o Upload CSV de vendas com `Docs/sales.csv`.
+3. Em Produtos, use o Upload CSV com `Docs/products.csv`.
+4. Em Categorias, use o Upload CSV com `Docs/categories.csv`.
+5. Verifique os charts e a lista de produtos.
+
+### Endpoints com curl (opcional)
+
+```bash
+curl http://localhost:8000/categories/
+curl http://localhost:8000/products/
+curl "http://localhost:8000/sales/summary?year=2025"
+```

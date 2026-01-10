@@ -16,7 +16,6 @@ Aplicacao fullstack com FastAPI no backend, React + Vite no frontend e Postgres 
 - `frontend/`: app React
 - `Docs/`: arquivos CSV e o enunciado do desafio
 - `docker-compose.yaml`: ambiente dev (hot reload)
-- `docker-compose.prod.yaml`: build de producao
 
 ## Como rodar (Docker - recomendado)
 
@@ -34,12 +33,6 @@ Servicos:
 - Backend: http://localhost:8000
 - Swagger: http://localhost:8000/docs
 - Postgres: localhost:5432 (user: app, pass: app, db: app_db)
-
-### Producao
-
-```bash
-docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build
-```
 
 Servicos:
 - Frontend (build): http://localhost:8080

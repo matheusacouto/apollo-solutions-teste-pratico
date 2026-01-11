@@ -11,8 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import type { Category, Product, SalesSummary } from "@/types"
 
 function App() {
-  const API_BASE =
-    import.meta.env.VITE_API_URL?.toString() ?? "http://localhost:8000"
+  const API_BASE = "/api"
 
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])

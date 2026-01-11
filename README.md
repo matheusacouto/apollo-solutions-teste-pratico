@@ -1,13 +1,13 @@
 # Apollo Solutions - Teste Pratico
 
-Aplicacao fullstack com FastAPI no backend, React + Vite no frontend e Postgres como banco de dados. O projeto inclui dashboard com charts de vendas, CRUD de produtos e categorias, upload/download de CSV e edicao mensal das vendas.
+Aplicação fullstack com FastAPI no backend, React + Vite no frontend e Postgres como banco de dados. O projeto inclui dashboard com charts de vendas, CRUD de produtos e categorias, upload/download de CSV e edição mensal das vendas.
 
 ## Stack
 
 - Backend: FastAPI + SQLAlchemy + Alembic
 - Frontend: React + Vite
 - Banco: PostgreSQL 16
-- Orquestracao: Docker Compose
+- Orquestração: Docker Compose
 - UI: Tailwind CSS + shadcn/ui
 
 ## Estrutura
@@ -25,7 +25,7 @@ Aplicacao fullstack com FastAPI no backend, React + Vite no frontend e Postgres 
 docker compose up --build
 ```
 
-O container do backend cria automaticamente o `.venv` em `backend/.venv` na primeira execucao.
+O container do backend cria automaticamente o `.venv` em `backend/.venv` na primeira execução.
 As migrations rodam automaticamente no startup (pode desativar com `RUN_MIGRATIONS=0`).
 
 Servicos:
@@ -78,7 +78,7 @@ npm install
 npm run dev
 ```
 
-Observacao: se precisar apontar para outro backend, defina `VITE_API_URL` no ambiente.
+Observação: se precisar apontar para outro backend, defina `VITE_API_URL` no ambiente.
 
 ## Dados de apoio
 
@@ -90,10 +90,10 @@ Os arquivos CSV do enunciado estao em `Docs/`:
 ## Funcionalidades
 
 - Dashboard com dois charts (quantidade vendida e variacao de faturamento).
-- Filtro de produtos por nome, categoria e ordem de preco.
-- Paginacao da lista de produtos.
-- Modal para cadastro/edicao de produtos e categorias.
-- Upload de CSV com validacao all-or-nothing.
+- Filtro de produtos por nome, categoria e ordem de preço.
+- Paginação da lista de produtos.
+- Modal para cadastro/edição de produtos e categorias.
+- Upload de CSV com validação.
 - Download de CSV de produtos e vendas.
 
 ## Como testar
